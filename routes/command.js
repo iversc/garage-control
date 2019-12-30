@@ -27,19 +27,21 @@ function activate() {
 /* GET home page. */
 router.get('/:action', function(req, res, next) {
     var action = req.params['action'];
-	var title = "";
+	var msg = "";
+    var statusCode = 200;
 
 	if(action === "activate") {
 		console.log("Command activate received.");
 		activate();
-		title = "Door Activated";
+		msg = "Door Activated";
     }
 	else {
 		console.log("Unknown command "+action);
-		title = "Unknown Command";
+		msg = "Unknown Command";
+		statusCode = 400;
 	}
 
-    res.render('command', { title: title, action: action });
+    res.status(statusCode).send(msg);
 });
 
 module.exports = router;

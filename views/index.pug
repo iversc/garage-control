@@ -3,4 +3,10 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  a(href="/command/activate") Activate the door
+
+  button(type='button' onclick="activate()") Activate the door
+
+  br
+  br
+
+  p#info Click a command to run it.
