@@ -24,6 +24,21 @@ function activate() {
   
 }
 
+function shutdown(sdType) {
+	const { spawnSync } = require('child_process');
+
+	if(sdType === "-h") {
+		console.log("Shutting down Pi...");
+	} else if(sdType === "-r") {
+		console.log("Rebooting Pi...");
+	} else {
+		console.log("Unsupported flag " + sdType);
+		return;
+	}
+
+	const  sdCommand = spawnSync('sudo', ['shutdown',sdType,'now']);
+}
+
 /* GET home page. */
 router.get('/:action', function(req, res, next) {
     var action = req.params['action'];
@@ -34,7 +49,15 @@ router.get('/:action', function(req, res, next) {
 		console.log("Command activate received.");
 		activate();
 		msg = "Door Activated";
-    }
+    } else if (action === "shutdown") {
+		console.log("Shutdown command received.");
+		shutdown("-h");
+		msg = "Shutting down";
+	} else if (action === "reboot") {
+		console.log("Reboot command received.");
+		shutdown("-r");
+		msg = "Rebooting...";
+	}
 	else {
 		console.log("Unknown command "+action);
 		msg = "Unknown Command";
