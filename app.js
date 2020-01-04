@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var fs = require('fs');
 
 var indexRouter = require('./routes/index');
 var commandRouter = require('./routes/command');
@@ -42,4 +43,9 @@ console.log("Starting GPIO...");
 const { spawnSync } = require('child_process');
 const gpio = spawnSync('gpio', [ '-g','mode','4','out']);
 
+console.log("Loading auth key...");
+let key = fs.readFileSync('keyfile');
+app.locals.authKey = key.toString().trim();
+
+console.log("Loading complete.");
 module.exports = app;
