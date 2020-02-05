@@ -67,7 +67,7 @@ router.get('/:authcode/:action', function(req, res, next) {
 		}
 
 	} else {
-		statusCode = 401;
+		statusCode = 403;
 		msg = "Invalid authorization code.";
 	}
 
