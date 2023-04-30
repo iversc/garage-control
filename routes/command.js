@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const crypto = require('crypto');
+const https = require('https');
 
 function activate() {
   	const { spawnSync } = require('child_process');
@@ -30,6 +31,31 @@ function shutdown(sdType) {
 	const  sdCommand = spawnSync('sudo', ['shutdown',sdType,'now']);
 }
 
+function switchLights(hueUser, lightsOn) {
+	body = `{ "on": {"on": ${lightsOn}`;
+
+	const options = {
+		hostname: "philips-hue",
+		port: 443,
+		path: "/clip/v2/resource/",
+		method: 'PUT',
+		rejectUnauthorized: false,
+		headers: {
+			"Content-Type": "application/json",
+			"hue-application-key": hueUser
+		}
+	}
+
+	const req = https.request(options);
+
+	req.on("error", (e) => {
+		console.error(`Error making request: ${e.message}`)
+	});
+	
+	req.write(body);
+	req.end();
+}
+
 /* GET home page. */
 router.get('/:authcode/:action', function(req, res, next) {
     var action = req.params['action'];
@@ -37,6 +63,7 @@ router.get('/:authcode/:action', function(req, res, next) {
 	var msg = "";
     var statusCode = 200;
 	var authKey = req.app.locals.authKey;
+	var hueUser = req.app.locals.hueUser;
 
 	let timestamp = (Math.floor(new Date() / 30000)).toString();
 
@@ -51,7 +78,7 @@ router.get('/:authcode/:action', function(req, res, next) {
 			console.log("Command activate received.");
 			activate();
 			msg = "Door Activated";
-    	} else if (action === "shutdown") {
+		} else if (action === "shutdown") {
 			console.log("Shutdown command received.");
 			shutdown("-h");
 			msg = "Shutting down";
@@ -59,8 +86,15 @@ router.get('/:authcode/:action', function(req, res, next) {
 			console.log("Reboot command received.");
 			shutdown("-r");
 			msg = "Rebooting...";
-		}
-		else {
+		} else if (action == "lightson") {
+			console.log("Lights on command received.");
+			switchLights(hueUser, true);
+			msg = "Lights On";
+		} else if (action == "lightsoff") {
+			console.log("Lights off command receivd.");
+			switchLights(hueUser, false);
+			msg = "Lights Off";
+		} else {
 			console.log("Unknown command "+action);
 			msg = "Unknown Command";
 			statusCode = 400;

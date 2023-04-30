@@ -47,5 +47,9 @@ console.log("Loading auth key...");
 let key = fs.readFileSync('keyfile');
 app.locals.authKey = key.toString().trim();
 
+console.log("Loading HUE API key...");
+let huekey = fs.readFileSync('hueuser');
+app.locals.hueUser = huekey.toString().trim();
+
 console.log("Loading complete.");
 module.exports = app;
