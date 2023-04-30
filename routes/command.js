@@ -32,12 +32,12 @@ function shutdown(sdType) {
 }
 
 function switchLights(hueUser, lightsOn) {
-	body = `{ "on": {"on": ${lightsOn}`;
+	body = `{ "on": {"on": ${lightsOn} }}`;
 
 	const options = {
 		hostname: "philips-hue",
 		port: 443,
-		path: "/clip/v2/resource/",
+		path: "/clip/v2/resource/grouped_light/b6faa6e6-dba5-4e11-81e1-bf92f67b9280",
 		method: 'PUT',
 		rejectUnauthorized: false,
 		headers: {
@@ -46,7 +46,16 @@ function switchLights(hueUser, lightsOn) {
 		}
 	}
 
-	const req = https.request(options);
+	const req = https.request(options, (res) => {
+		console.log("HTTP request began");
+
+		res.on("data", (chunk) => {
+			console.log(`BODY: ${chunk}`);
+		});
+		res.on("end", () => {
+			console.log("End of response data.");
+		});
+	});
 
 	req.on("error", (e) => {
 		console.error(`Error making request: ${e.message}`)

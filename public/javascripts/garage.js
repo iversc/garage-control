@@ -61,3 +61,19 @@ function reboot()
 
 	runCommand("reboot");
 }
+
+function lightson()
+{
+	var info = document.getElementById("info");
+	info.innerHTML = "Lights on...";
+
+	runCommand("lightson");
+}
+
+function lightsoff()
+{
+	var info = document.getElementById("info");
+	info.innerHTML = "Lights off...";
+
+	runCommand("lightsoff");
+}
