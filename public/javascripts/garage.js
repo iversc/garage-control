@@ -15,7 +15,8 @@ function runCommand(action)
 
 	if (window.XMLHttpRequest) {
 		xmlhttp = new XMLHttpRequest();
-		xmlhttp.open("GET", "/command/" + hmac + "/" + action, true);
+		xmlhttp.open("GET", "/command/" + action, true);
+		xmlhttp.setRequestHeader("Authorization", "Bearer " + hmac);
 		xmlhttp.onreadystatechange = function() {
 			if(xmlhttp.readyState === XMLHttpRequest.DONE)
 			{

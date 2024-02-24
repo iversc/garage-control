@@ -65,53 +65,67 @@ function switchLights(hueUser, lightsOn) {
 	req.end();
 }
 
+function checkAuthCode(authCode, authKey) {
+	let timecode = Math.floor(new Date() / 30000);
+	let timestamp = timecode.toString();
+	keyHash = crypto.createHmac('sha1', authKey).update(timestamp).digest('hex');
+
+	console.log("HMAC: " + keyHash);
+
+	if(keyHash !== authCode) {
+		console.log("First HMAC challenge failed, attempting again with previous code.");
+		timecode -= 1;
+		
+		timestamp = timecode.toString();
+		keyHash = crypto.createHmac('sha1', authKey).update(timestamp).digest('hex');
+
+		console.log("HMAC: " + keyHash);
+		if(keyHash !== authCode) {
+			return false;
+		}
+	} 
+
+	return true;
+}
+
 /* GET home page. */
-router.get('/:authcode/:action', function(req, res, next) {
+router.get('/:action', function(req, res, next) {
     var action = req.params['action'];
-	var authcode = req.params['authcode'];
+	var authCode = (req.headers.authorization || '').split(' ')[1] || '';
 	var msg = "";
     var statusCode = 200;
 	var authKey = req.app.locals.authKey;
 	var hueUser = req.app.locals.hueUser;
 
-	let timestamp = (Math.floor(new Date() / 30000)).toString();
+	if(!checkAuthCode(authCode, authKey)) {
+		res.status(403).send("Invalid authorization code.");
+		return;
+	}
 
-	keyHash = crypto.createHmac('sha1', authKey).update(timestamp).digest('hex');
-
-	console.log("HMAC: " + keyHash);
-
-	if(keyHash === authcode) {
-		console.log("Good auth code received. Processing command...");
-
-		if(action === "activate") {
-			console.log("Command activate received.");
-			activate();
-			msg = "Door Activated";
-		} else if (action === "shutdown") {
-			console.log("Shutdown command received.");
-			shutdown("-h");
-			msg = "Shutting down";
-		} else if (action === "reboot") {
-			console.log("Reboot command received.");
-			shutdown("-r");
-			msg = "Rebooting...";
-		} else if (action == "lightson") {
-			console.log("Lights on command received.");
-			switchLights(hueUser, true);
-			msg = "Lights On";
-		} else if (action == "lightsoff") {
-			console.log("Lights off command receivd.");
-			switchLights(hueUser, false);
-			msg = "Lights Off";
-		} else {
-			console.log("Unknown command "+action);
-			msg = "Unknown Command";
-			statusCode = 400;
-		}
-
+	if(action === "activate") {
+		console.log("Command activate received.");
+		activate();
+		msg = "Door Activated";
+	} else if (action === "shutdown") {
+		console.log("Shutdown command received.");
+		shutdown("-h");
+		msg = "Shutting down";
+	} else if (action === "reboot") {
+		console.log("Reboot command received.");
+		shutdown("-r");
+		msg = "Rebooting...";
+	} else if (action == "lightson") {
+		console.log("Lights on command received.");
+		switchLights(hueUser, true);
+		msg = "Lights On";
+	} else if (action == "lightsoff") {
+		console.log("Lights off command receivd.");
+		switchLights(hueUser, false);
+		msg = "Lights Off";
 	} else {
-		statusCode = 403;
-		msg = "Invalid authorization code.";
+		console.log("Unknown command "+action);
+		msg = "Unknown Command";
+		statusCode = 400;
 	}
 
    	res.status(statusCode).send(msg);
